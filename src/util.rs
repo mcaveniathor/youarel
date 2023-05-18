@@ -66,8 +66,7 @@ pub struct Cli {
 
     #[arg(short, long, default_value="8")]
     /// The number of base64 characters used in shortened URLs. A smaller number increases the
-    /// chances of collisions, but that small chance is probably worth it considering this is a URL
-    /// shortener
+    /// chances of collisions 
     pub length: usize,
 
     #[arg(short, long, default_value_t = get_project_data_dir())]

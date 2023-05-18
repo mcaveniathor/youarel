@@ -1,4 +1,10 @@
+
 //#![allow(unused_imports)]
+//
+//
+
+#![feature(test)]
+extern crate test;
 extern crate anyhow;
 #[macro_use] extern crate tracing;
 extern crate clap_verbosity_flag as cvf;
