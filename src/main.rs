@@ -84,7 +84,7 @@ async fn run(cli: Cli) -> Result<()> {
     tracing::debug!("Opening database at {}", &cli.db);
     let db = Arc::new(sled::open(&cli.db)?);
     //let (cert_chain, private_key) = transport::configure_server_cert(cli.cert.as_ref(), cli.key.as_ref())?;
-    let _ = {
+    {
         #[cfg(feature = "axum")]
         run_axum(cli, db.clone())
     }.await?;
@@ -113,7 +113,7 @@ fn main() -> Result<()> {
             layer.boxed()
         }
     }
-    .with_filter(verbosity_to_level(cli.verbose.log_level().unwrap_or_else(|| cvf::Level::Info)));
+    .with_filter(verbosity_to_level(cli.verbose.log_level().unwrap_or(cvf::Level::Info)));
     let subscriber = tracing_subscriber::registry()
         .with(fmt_layer);
     tracing::subscriber::set_global_default(subscriber).expect("Failed to set tracing subscriber.");

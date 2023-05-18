@@ -5,7 +5,7 @@ use axum::{
     extract::{State,Path},
 };
 
-const HEAD: &'static str = r#"
+const HEAD: &str = r#"
 <!doctype html>
     <html lang="en">
         <head>

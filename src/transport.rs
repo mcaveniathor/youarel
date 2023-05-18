@@ -28,7 +28,7 @@ pub fn configure_server_tls(cert_path: Option<impl AsRef<Path>>, key_path: Optio
                     let cert_der = cert.serialize_der().context("Failed to serialize self-signed certificate as DER")?;
                     let priv_key = cert.serialize_private_key_der();
                     let priv_key = rustls::PrivateKey(priv_key);
-                    let cert_chain = vec![rustls::Certificate(cert_der.clone())];
+                    let cert_chain = vec![rustls::Certificate(cert_der)];
                     (cert_chain, priv_key)
                 },
                 Err(e) => { bail!("Failed to read certificate: {}", e); }
