@@ -16,8 +16,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Clippy
-      run: cargo clippy --fix
+    - name: Disable rustup auto-update
+      run: rustup set auto-self-update disable
+    - name: Install nightly toolchain
+      run: rustup toolchain install nightly --profile minimal
+    - uses: Swatinem/rust-cache@v2
     - name: Build
       run: cargo build --verbose
     - name: Run tests
