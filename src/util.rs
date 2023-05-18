@@ -60,7 +60,7 @@ pub struct Cli {
     /// The address to bind to
     pub address: IpAddr,
 
-    #[arg(short,long, default_value="3000")]
+    #[arg(short,long, default_value="443")]
     /// The port to bind to
     pub port: u16,
 
@@ -74,15 +74,17 @@ pub struct Cli {
     /// Path to the database root. Defaults to the appropriate data directory 
     /// according to XDG/Known Folder/Standard directories specifications based on OS
     pub db: String,
-    /// TLS private key in DER format
+    /// Path to file containing TLS private key in DER format
     #[arg(short = 'k', long = "key", requires = "cert")]
     pub key: Option<PathBuf>,
-    /// TLS certificate in DER format
+    /// Path to file containing TLS certificate in DER format
     #[arg(short = 'c', long = "cert", requires = "key")]
     pub cert: Option<PathBuf>,
+    /*
     /// Enable stateless retries
     #[arg(long = "stateless-retry")]
     pub stateless_retry: bool,
+    */
 
     #[arg(long, default_value = "localhost")]
     pub hostname: String,
