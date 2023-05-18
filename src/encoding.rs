@@ -18,23 +18,3 @@ pub fn encode(s: impl AsRef<str>, length: Option<usize>) -> String {
 
 
 
-#[cfg(test)]
-mod tests {
-    use test::{Bencher, black_box};
-    use super::*;
-
-    #[bench]
-    fn bench_encode(b: &mut Bencher) {
-        // Optionally include some setup
-        let urls = vec![ "https://docs.rs/axum/latest/axum/index.html#required-dependencies", "https://github.com/mcaveniathor/youarel/stargazers", "https://localhost:3000/", "https://windows11.zip"];
-
-        b.iter(|| {
-            // Inner closure, the actual test
-            let length = 10;
-            for url in &urls {
-                black_box(encode(&url, Some(length)));
-            }
-        });
-    }
-}
-
