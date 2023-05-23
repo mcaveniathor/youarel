@@ -3,12 +3,50 @@ use clap::Parser;
 use tracing_subscriber::filter::LevelFilter;
 use directories::ProjectDirs;
 use sled::Db;
-use std::{net::IpAddr, path::PathBuf, sync::Arc};
+use std::{net::IpAddr, path::PathBuf, sync::Arc };
 use blake3::Hasher;
 use base64::Engine;
 use serde::{Serialize,Deserialize};
+use chrono::{DateTime,Utc};
 use url::Url;
 
+
+/// Serialize value of type `S` and insert into the database, returning the existing value if successfully
+/// deserialized into a `D`
+pub fn ser_insert<K, S, D>(db: Arc<Db>, key: K, v: &S) -> anyhow::Result<Option<D>>
+where
+    K: AsRef<[u8]>,
+    S: Serialize,
+    D: for <'a> Deserialize<'a>,
+{
+    let serialized = bincode::serialize(v)?;
+    let old = db.insert(key, serialized)?;
+    match old {
+        Some(old_bytes) => {
+            let old_decoded: D = bincode::deserialize(&old_bytes[..])?;
+            Ok(Some(old_decoded))
+        },
+        _ => {
+            Ok(None)
+        }
+    }
+}
+
+/// Retrieve a value from the database and attempt to deserialize it into a `D`
+pub fn de_get<K, D>(db: Arc<Db>, key: K) -> anyhow::Result<Option<D>>
+where
+    K: AsRef<[u8]>,
+    D: for <'a> Deserialize <'a>,
+{
+    let val = db.get(key)?;
+    match val {
+        Some(val_bytes) => {
+            let decoded = bincode::deserialize(&val_bytes[..])?;
+            Ok(Some(decoded))
+        },
+        _ => Ok(None)
+    }
+}
 
 /// Hash `s` with blake3, Base64 encode (URL-safe with no padding) the hash, and truncate to ENCODED_LENGTH characters. 
 pub fn encode(s: impl AsRef<str>, length: usize) -> String {
@@ -29,6 +67,33 @@ pub struct AppState {
     pub db: Arc<Db>,
     pub hostname: String,
     pub port: u16,
+    pub default_length: usize,
+}
+
+
+#[derive(Serialize, Deserialize)]
+pub struct ShortenEntry {
+    /// Time of creation
+    pub created: DateTime<Utc>,
+    /// The original URL
+    pub long_url: Url,
+    /// Remaining number of accesses before expiration, if specified
+    pub accesses: Option<usize>,
+}
+
+impl ShortenEntry {
+    fn new(req: ShortenReq) -> ShortenEntry {
+        ShortenEntry {
+            created: Utc::now(),
+            long_url: req.long_url,
+            accesses: req.accesses,
+        }
+    }
+}
+impl From<ShortenReq> for ShortenEntry {
+    fn from(req: ShortenReq) -> ShortenEntry {
+        ShortenEntry::new(req)
+    }
 }
 
 
@@ -38,6 +103,8 @@ pub struct ShortenReq {
     pub long_url: Url,
     /// The desired number of characters in the shorted URL
     pub length: Option<usize>,
+    /// Remove the shortened URL after this many accesses
+    pub accesses: Option<usize>,
 }
 
 

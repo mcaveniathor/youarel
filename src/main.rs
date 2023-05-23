@@ -4,7 +4,7 @@
 //
 
 
-
+#![feature(file_create_new)] // nightly 
 extern crate anyhow;
 #[macro_use] extern crate tracing;
 extern crate clap_verbosity_flag as cvf;
@@ -49,7 +49,7 @@ lazy_static! {
 
 #[cfg(feature = "axum")]
 async fn run_axum(cli: Cli, db: Arc<sled::Db>) -> Result<()> {
-    let state = AppState { db, hostname: cli.hostname.clone(), port: cli.port };
+    let state = AppState { db, hostname: cli.hostname.clone(), port: cli.port, default_length: cli.length };
     let app = Router::new()
         .route("/", get(root).post(accept_form))
         .route("/:key", get(redirect))
@@ -87,7 +87,7 @@ async fn run_axum(cli: Cli, db: Arc<sled::Db>) -> Result<()> {
 
 #[tokio::main]
 async fn run(cli: Cli) -> Result<()> {
-    tracing::debug!("Opening database at {}", &cli.db);
+    tracing::info!("Opening database at {}", &cli.db);
     let db = Arc::new(sled::open(&cli.db)?);
     //let (cert_chain, private_key) = transport::configure_server_cert(cli.cert.as_ref(), cli.key.as_ref())?;
     {
@@ -123,7 +123,7 @@ fn main() -> Result<()> {
     let subscriber = tracing_subscriber::registry()
         .with(fmt_layer);
     tracing::subscriber::set_global_default(subscriber).expect("Failed to set tracing subscriber.");
-    info!("Initialized logger.");
+    debug!("Initialized logger.");
     run(cli).map_err(|e| { error!("{}",e); e})?;
     Ok(())
 }
